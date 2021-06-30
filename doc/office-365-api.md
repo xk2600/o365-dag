@@ -71,7 +71,7 @@ The following parameters are universal to all endpoints:
 
 ###### Response Fields
 
-| Fields    | Description
+| Field     | Description
 |-----------|-------------------------------------------------------------
 |`instance` | *string:* The short name of the Office 365 service instance
 |`latest`   | *YYYMMDDNN*: The latest version for endpoints of the specified instance
@@ -203,7 +203,7 @@ GET https://endpoints.office.com/endpoints/Worldwide?ClientRequestId=b10c5ed1-ba
 
 ###### Response Fields
 
-|field             |                                   
+| Field             | Description                                  
 |------------------|---------------------------------------------
 |`id`              | The immutable id of the change record.
 |`endpointSetId`   | The ID of the endpoint set record that is changed.
