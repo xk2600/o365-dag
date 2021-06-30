@@ -5,16 +5,17 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 from pydantic import create_model, parse_obj_as
 from pydantic import validator, root_validator
+from typing import List, Dict, Union, Optional, Any
 
 class URI:
     version:   str = 'https://endpoints.office.com/version'
     endpoints: str = 'https://endpoitns.office.com/endpoints/{instance}'
     changes:   str = 'https://endpoints.office.com/changes/{serviceArea}'
 
-class formats:
-    version:     string = '{YYYY}{MM}{DD}{NN}'
+class Formats:
+    version:     str = '{YYYY}{MM}{DD}{NN}'
 
-class validator:
+class Validator:
     instance:    list = ['Worldwide', 'USGovDoD', 'USGovGCCHigh', 'China', 'Germany']
     serviceArea: list = ['Common', 'Exchange', 'SharePoint', 'Skype']
     category:    list = ['Optimize', 'Allow', 'Default']
@@ -38,8 +39,8 @@ class InstanceModel(O365BaseModel):
 
 class ChangeAtomModel(O365BaseModel):
     effectiveDate: str
-    ips:           list[str]
-    urls:          list[str]
+    ips:           List[str]
+    urls:          List[str]
 
 class ServiceAtomModel(O365BaseModel):
     serviceArea:            str
@@ -51,6 +52,12 @@ class ServiceAtomModel(O365BaseModel):
     required:               bool
     notes:                  Optional[str]
 
+    @validator('serviceArea')
+    def serviceArea_validator(cls, instance):
+        if instance not in ['Worldwide', 'USGovDoD', 'USGovGCCHigh', 'China', 'Germany']:
+            raise Exception("response returned with invalide instance: %s\n" % instance)
+    
+
 
 
 ##### Response Models #######################################
@@ -61,7 +68,7 @@ class VersionModel(O365BaseModel):
 class EndpointsModel(O365BaseModel, ServiceAtomModel):
     id:                     int
     serviceAreaDisplayName: Optional[str]
-    ips:                    Optional[List[str]
+    ips:                    Optional[List[str]]
 
 class ChangesModel(O365BaseModel):
     id:                     int
@@ -78,48 +85,52 @@ class ChangesModel(O365BaseModel):
 
 
 ##### Validators ############################################
-
-def instance_validator():
-    if instance not in ['Worldwide', 'USGovDoD', 'USGovGCCHigh', 'China', 'Germany']:
-        raise Exception("response returned with invalide instance: %s\n" % instance)
-
-
-)
 ##### Implementation ########################################
 
-def version(format='JSON', AllVersions=False, Instance="Worldwide"):
+def version(Format='JSON', AllVersions=False, Instance="Worldwide"):
+    ClientRequestId = uuid4()
     options = {
         'params': {
-            'format': format
+            'format': Format,
             'AllVersions': AllVersions,
-            'Instance': Instance
+            'Instance': Instance,
+            'ClientRequestId': ClientRequestId
         }
     }
-    response = requests.get(URI.version, **options}
+    response = requests.get(URI.version, **options)
     if response.ok:
         return parse_obj_as(VersionModel, response.json())
     else:
         response.raise_for_status()
         
 def endpoints(ServiceAreas=None, TenantName=None, NoIPv6=False, Instance='Worldwide'):
-    If Instance not in validator.instance:
+    if Instance not in validator.instance:
         raise Exception('unknown instance provided')
+    ClientRequestId = uuid4()
     options = {
         'params': {
             'ServiceAreas': ServiceAreas,
             'TenantName': TenantName,
-            'NoIPv6': NoIPv6
+            'NoIPv6': NoIPv6,
+            'ClientRequestId': ClientRequestId
         }
     }
-    response = requests.get(URI.endpoints.format(Instance=Instance). **options)
+    response = requests.get(URI.endpoints.format(Instance=Instance), **options)
     if response.ok:
         return parse_obj_as(EndpointsModel, response.json())
     else:
         response.raise_for_status()
 
 def changes(Version='0000000000'):
+    ClientRequestId = uuid4()
+    options = {
+        'params': {
+            'ClientRequestId': ClientRequestId
+        }
+    }
     response = requests.get(URI.changes.format(Version=Version))
     if response.ok:
         return parse_obj_as(ChangesModel, response.json())
     else:
         response.raise_for_status()
+
