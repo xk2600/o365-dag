@@ -30,12 +30,12 @@ state.
 
 The following parameters are universal to all endpoints:
 
-- **format** (*string:* `JSON` or `CSV`)
+- **`format`** (*string:* `JSON` or `CSV`)
 
   default: the returned data format is JSON. Use this optional parameter to 
   return the data in comma-separated values (CSV) format.
 
-- `ClientRequestId` (*guid*)
+- **`ClientRequestId`** (*guid*)
 
   A required GUID that you generate for client association. Generate a unique 
   GUID for each machine that calls the web service (the scripts included on this
@@ -50,20 +50,20 @@ The following parameters are universal to all endpoints:
 
 ###### Parameters
 
-- **AllVersions** (*boolean:* `true` or `false`)
+- **`AllVersions`** (*boolean:* `true` or `false`)
    
   By default, the version returned is the latest. Include this optional
   parameter to request all published versions since the web service was first
   released.
 
-- **Format** (*string:* `JSON`, `CSV`, `RSS`)
+- **`Format`** (*string:* `JSON`, `CSV`, `RSS`)
 
   In addition to the JSON and CSV formats, the version web method also supports
   RSS. You can use this optional parameter along with the AllVersions=true
   parameter to request an RSS feed that can be used with Outlook or other RSS 
   readers.
 
-- **Instance** (*string:* `Worldwide`, `China`, `Germany`, `USGovDoD`, `USGovGCCHigh`)
+- **`Instance`** (*string:* `Worldwide`, `China`, `Germany`, `USGovDoD`, `USGovGCCHigh`)
 
   This optional parameter specifies the instance to return the version for. If
   omitted, all instances are returned. Valid instances are: Worldwide, China, 
@@ -110,25 +110,25 @@ The following parameters are universal to all endpoints:
 
 ###### Parameters
 
-- **ServiceAreas** (*string:* `Common`, `Exchange`, `SharePoint`, `Skype`) 
+- **`ServiceAreas`** (*string:* `Common`, `Exchange`, `SharePoint`, `Skype`) 
 
   A comma-separated list of service areas. Valid items are Common, Exchange,
   SharePoint, and Skype. Because Common service area items are a prerequisite
   for all other service areas, the web service always includes them. If you do
   not include this parameter, all service areas are returned.
   
-- **TenantName** (*string*: `Acme`)
+- **`TenantName`** (*string*: `Acme`)
 
   Your Office 365 tenant name. The web service takes your provided name and
   inserts it in parts of URLs that include the tenant name. If you don't 
   provide a tenant name, those parts of URLs have the wildcard character (\*).
 
-- **NoIPv6** (*boolean:* `true` or false`)
+- **`NoIPv6`** (*boolean:* `true` or false`)
 
   Set the value to true to exclude IPv6 addresses from the output if you don't
   use IPv6 in your network.
 
-- **Instance** (*string:* `Worldwide`, `China`, `Germany`, `USGovDoD`, `USGovGCCHigh`)
+- **`Instance`** (*string:* `Worldwide`, `China`, `Germany`, `USGovDoD`, `USGovGCCHigh`)
 
   This required parameter specifies the instance from which to return the
   endpoints. Valid instances are: Worldwide, China, Germany, USGovDoD, and 
@@ -192,7 +192,7 @@ GET https://endpoints.office.com/endpoints/Worldwide?ClientRequestId=b10c5ed1-ba
 
 ###### Parameters
 
-- **Version** (*string:* `YYYYMMDDNN`)
+- **`Version`** (*string:* `YYYYMMDDNN`)
 
   Required URL route parameter. This value is the version that you have 
   currently implemented. The web service will return the changes since that
