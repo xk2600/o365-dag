@@ -46,7 +46,7 @@ The following parameters are universal to all endpoints:
 
 
 ### Version Web Method
-[https://endpoints.office.com/version](#version_web_method)
+*[[https://endpoints.office.com/version](#version_web_method)]*
 
 ###### Parameters
 
@@ -107,6 +107,8 @@ The following parameters are universal to all endpoints:
 
 
 ### Endpoints Web Method
+*[[https://endpoints.office.com/endpoints/worldwide](#endpoints_web_method)]*
+
 
 ###### Parameters
 
@@ -189,6 +191,7 @@ GET https://endpoints.office.com/endpoints/Worldwide?ClientRequestId=b10c5ed1-ba
 
 
 ### Changes Web Method
+*[[https://endpoints.office.com/changes/worldwide/0000000000](#changes_web_method)]*
 
 ###### Parameters
 
