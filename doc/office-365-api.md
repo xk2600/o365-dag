@@ -203,8 +203,8 @@ GET https://endpoints.office.com/endpoints/Worldwide?ClientRequestId=b10c5ed1-ba
 
 ###### Response Fields
 
-| Field             | Description                                  
-|------------------|---------------------------------------------
+| Field            | Description                                  
+|------------------|-----------------------------------------------------------
 |`id`              | The immutable id of the change record.
 |`endpointSetId`   | The ID of the endpoint set record that is changed.
 |`disposition`     | `change`, `add`, or `remove`.
@@ -213,13 +213,15 @@ GET https://endpoints.office.com/endpoints/Worldwide?ClientRequestId=b10c5ed1-ba
 |`previous`        | previous values of changed elements on the endpoint set **deprecated**
 |`current`         | updated values of changeds elements on the endpoint set
 |`add`             | substructure: `effectiveDate`, `ips`, `urls`
-| - `effectiveDate`| Defines the data when the additions will be live in the service.
-| - `ips`          | Items to be added to the ips array. 
-| - `urls`         | Items to be added to the urls array.
 |`remove`          | substructure: `effectiveDate`, `ips`, `urls`
-| - `effectiveDate`| Defines the data when the additions will be live in the service.
-| - `ips`          | Items to be removed from the ips array. 
-| - `urls`         | Items to be removed from the urls array.
+
+###### Response Sub-fields used in `add` and `remove`:
+
+| Sub-Fields       | Descriptions
+|------------------|-----------------------------------------------------------
+|`effectiveDate`| Defines the data when the additions will be live in the service.
+|`ips`          | Items to be added/removed from the ips array. 
+|`urls`         | Items to be added/removed from the urls array.
 
 > `current` and `previous` fields include the following subfields: `ExpressRoute`, 
 > `serviceArea`, `category`, `required`, `tcpPorts`, `udpPorts`, and `notes`.
