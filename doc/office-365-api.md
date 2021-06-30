@@ -217,14 +217,23 @@ GET https://endpoints.office.com/endpoints/Worldwide?ClientRequestId=b10c5ed1-ba
 
 ###### Response Sub-fields used in `add` and `remove`:
 
-| Sub-Fields       | Descriptions
-|------------------|-----------------------------------------------------------
+| Sub-Fields    | Descriptions
+|---------------|-----------------------------------------------------------
 |`effectiveDate`| Defines the data when the additions will be live in the service.
 |`ips`          | Items to be added/removed from the ips array. 
 |`urls`         | Items to be added/removed from the urls array.
 
-> `current` and `previous` fields include the following subfields: `ExpressRoute`, 
-> `serviceArea`, `category`, `required`, `tcpPorts`, `udpPorts`, and `notes`.
+###### `current` and `previous` fields include the following subfields: 
+
+| Sub-Fields    | Descriptions
+|---------------|-----------------------------------------------------------
+|`serviceArea`  | *string:* service area: `Common`, `Exchange`, `SharePoint`, or `Skype`
+|`tcpPorts`     | comma separated list of hyphenated TCP port ranges
+|`udpPorts`     | comma separated list of hyphenated UDP port ranges
+|`category`     | *string:* `Optimize`, `Allow`, and `Default`
+|`expressRoute` | *boolean:* True destinations routed over ExpressRoute, otherwise false
+|`required`     | *boolean:& True: endpoint set requires connectivity for support, otehrwise false
+|`notes`        | describes Office 365 functionality unavailable without updates as perscribed 
 
 ###### Example Response
 
