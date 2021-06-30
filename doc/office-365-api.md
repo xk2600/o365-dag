@@ -80,7 +80,7 @@ The following parameters are universal to all endpoints:
 
 ###### Example Response
 
-`````
+```
 [
  {
   "instance": "Worldwide",
