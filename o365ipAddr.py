@@ -25,14 +25,13 @@ pformat = PrettyPrinter(indent=2, compact=False).pformat
 # conditional debugger
 class debugging:
     enabled: str = False
-    @property
     def enable(self):
-        print(f'debugging: {enable}')
         self.enabled = True
-    def disable():
-        print(f'debugging: {enable}')
-        self.disabled = False
-# debugger instance
+        print(f'debugging.enabled: {self.enabled}')
+    def disable(self):
+        self.enabled = False
+        print(f'debugging.enabled: {self.enabled}')
+# debugger Instance
 debugging = debugging()
 def debug(message="", obj=None):
     if debugging.enabled:
@@ -44,31 +43,37 @@ def debug(message="", obj=None):
 
 
 
-##### Pydantic BaseModel and Configuration ###################
+##### Base Models all Classes originate from #################
 
 class O365BaseModel(BaseModel):
     class Config:
         arbitrary_types_allowed=True
 
-
+_parameterOptions = {}
+class RestParameter(Enum):  
+    def __init_subclass__(cls, ParamName=None, **kwargs):
+        super().__init_subclass__(**kwargs)
+        if ParamName == None:
+            ParamName = cls.__name__
+        _parameterOptions[ParamName] = \
+                [ option for option in dir(cls) if option[0] != '_' ]
 
 ##### Enumerations ###########################################
 
 class URI:
-    version: str = 'https://endpoints.office.com/version'
+    def version(self): 
+        return 'https://endpoints.office.com/version'
 
-    @property
-    def endpoints(self, instance):
-        return f'https://endpoints.office.com/endpoints/{instance}'
+    def endpoints(self, Instance):
+        return f'https://endpoints.office.com/endpoints/{Instance}'
 
-    @property
     def changes(self, serviceArea, version):
         return f'https://endpoints.office.com/changes/{serviceArea}/{version}'
 # singleton
 URI = URI()
 
 
-class InstanceEnum(str, Enum):
+class InstanceParam(str, RestParameter):
     """ Office Instances by Physical Segmentation boundary
     """
     Worldwide    = 'Worldwide'
@@ -77,7 +82,7 @@ class InstanceEnum(str, Enum):
     China        = 'China'
     Germany      = 'Germany'
 
-class ServiceAreaEnum(str, Enum): 
+class ServiceAreaParam(str, RestParameter): 
     """ ServiceArea options that can be filtered for in requests 
     """
     Common       = 'Common'
@@ -87,27 +92,27 @@ class ServiceAreaEnum(str, Enum):
 
     __or__= lambda left, right: ','.join((left.value, right.value))
 
-class DispositionEnum(str, Enum):
+class DispositionParam(str, RestParameter):
     """ trigger which evoked version increment.
     """
     change       = 'change'
     add          = 'add'
     remove       = 'remove'
 
-class CategoryEnum(str, Enum):
+class CategoryParam(str, RestParameter):
     """ reason for update resulting in version increment
     """
     Optimize     = 'Optimize'
     Allow        = 'Allow'
     Default      = 'Default'
 
-class FormatEnum(str, Enum):
+class FormatParam(str, RestParameter):
     """ Expected format of response.
     """
     JSON         = 'JSON'
     CSV          = 'CSV'
 
-class ImpactEnum(str, Enum):
+class ImpactParam(str, RestParameter):
     """ Impact description as a result of not updating current policy with
         changes notated in this version.
     """
@@ -126,11 +131,11 @@ class ImpactEnum(str, Enum):
 ##### Supporting Models ######################################
 
 """ Version --
-          instance version
+          Instance version
 """
 class InstanceVersion(BaseModel):
     """ 
-        Version metadata per instance.
+        Version metadata per Instance.
 
     ATTRIBUTES
 
@@ -183,7 +188,7 @@ class InstanceVersion(BaseModel):
         return str(self)
 
 
-    # reusable validator to cast 10-digit version str into Version instance.
+    # reusable validator to cast 10-digit version str into Version Instance.
     @root_validator(pre=True)
     def validate_version(cls, v):
         if not isinstance(v, str or InstanceVersion):
@@ -234,21 +239,21 @@ class ServiceAtomModel(O365BaseModel):
 
     ATTRIBUTES
 
-        serviceArea  -> <ServiceAreaEnum>
+        serviceArea  -> <ServiceAreaParam>
         urls         -> ( str, ... )
         tcpPorts     -> str (comma separated list of ports and port-ranges)
         udpPorts     -> str (comma separated list of ports and port-ranges_)
-        category     -> <CategoryEnum>
+        category     -> <CategoryParam>
         expressRoute -> bool
         required     -> bool
         notes        -> str
 
     """
-    serviceArea:            ServiceAreaEnum
+    serviceArea:            ServiceAreaParam
     urls:                   List[str]
     tcpPorts:               str # conint(ge=0, lt=65535)
     udpPorts:               str # conint(ge=0, lt=65535)
-    category:               CategoryEnum
+    category:               CategoryParam
     expressRoute:           bool
     required:               bool
     notes:                  Optional[str]
@@ -259,15 +264,15 @@ class ServiceAtomModel(O365BaseModel):
 
 class VersionModel(O365BaseModel):
     """
-        describes instance version(s) when a change occured
+        describes Instance version(s) when a change occured
 
     ATTRIBUTES
         
-        instance: <InstanceEnum>
+        Instance: <InstanceParam>
         latest:   <InstanceVersion>
         versions: ( <InstanceVersion, ... )
     """
-    instance: InstanceEnum
+    Instance: InstanceParam
     latest:   Union[InstanceVersion, str]
     versions: Optional[List[Union[InstanceVersion, str]]]
 
@@ -279,13 +284,13 @@ class EndpointsModel(ServiceAtomModel):
     ATTRIBUTES
 
         id -> int
-        serviceArea            -> <ServiceAreaEnum>
+        serviceArea            -> <ServiceAreaParam>
         serviceAreaDisplayName -> str
         urls                   -> ( str, ... )
         ips                    -> ( str, ... )
         tcpPorts               -> str (comma separated list of ports and port-ranges)
         udpPorts               -> str (comma separated list of ports and port-ranges)
-        category               -> <CategoryEnum>
+        category               -> <CategoryParam>
         expressRoute           -> bool
         required               -> bool
         notes                  -> str
@@ -304,8 +309,8 @@ class ChangesModel(O365BaseModel):
     
         id                     -> int
         endpointSetId          -> int
-        disposition            -> <DispositionEnum>
-        impact                 -> <ImpactEnum>
+        disposition            -> <DispositionParam>
+        impact                 -> <ImpactParam>
         version                -> InstanceVersion
         previous               -> <ServiceAtomModel>
         current                -> <ServiecAtomModel>
@@ -316,8 +321,8 @@ class ChangesModel(O365BaseModel):
     """
     id:                     int
     endpointSetId:          int
-    disposition:            DispositionEnum
-    impact:                 ImpactEnum
+    disposition:            DispositionParam
+    impact:                 ImpactParam
     version:                Union[InstanceVersion, str]
     previous:               ServiceAtomModel
     current:                ServiceAtomModel
@@ -338,7 +343,7 @@ def o365ipAddr_json(Model, json):
         validators and so this is the duct tape that shall function in it's place.
 
         if `json` is a list of `Model`s, iterate over them as we parse the json
-        into instances of `Model`.
+        into Instances of `Model`.
 
     ARGUMENTS
 
@@ -356,26 +361,30 @@ def o365ipAddr_json(Model, json):
     """
     debug('o365ipAddr_json:\n%s\n' % (pformat(json)))
     if isinstance(json, list):
-        instanceList = []
+        InstanceList = []
         length = 0
         for entry in json:
-            instanceList.append( Model.parse_obj(entry) )
+            InstanceList.append( Model.parse_obj(entry) )
             length += 1
-        return length, tuple(instanceList)
+        return length, tuple(InstanceList)
     debug("o365ipAddr_json.jsonResponse:\n%s\n" % pformat(jsonResponse))
     return 1, Model.parse_obj(json)
 
 def o365ipAddr_get(
         Model, 
         URI:    str, 
-        Format: FormatEnum = FormatEnum.JSON,
-        **params):
+        Format: FormatParam = FormatParam.JSON,
+        **options):
+    params = {} 
     params['ClientRequestId'] = str(uuid4())
     params['Format']          = Format.value
+    for key in options.keys():
+        if options[key] is not None:
+            params[key] = options[key]
     debug("o365ipAddr_get: GET %s?%s HTTP/1.1\n" % (URI, uu(params)))
     response = requests.get(URI, params=params)
     if response.ok:
-        if Format == FormatEnum.JSON:
+        if Format == FormatParam.JSON:
             # JSON Response (hopefully)... 
             ModelCount, Models = o365ipAddr_json(Model, response.json())
         else:
@@ -389,19 +398,15 @@ def o365ipAddr_get(
         response.raise_for_status()
 
 def getVersion(
-        AllVersions:   bool            = False,
-        Instance:      InstanceEnum    = InstanceEnum.Worldwide,
-        Format:        FormatEnum      = FormatEnum.JSON):
+        AllVersions:   bool             = False,
+        Instance:      InstanceParam    = InstanceParam.Worldwide,
+        Format:        FormatParam      = FormatParam.JSON):
     """
-        Retrieves instance version information for office 365 connectivity
+        Retrieves Instance version information for office 365 connectivity
         information, allowing use in policy management and context-based
         authorization control systems, such as firewalls, proxies, etc.) 
 
     ARGUMENTS
-
-        Format: <FormatEnum>
-              JSON returns JSON data, and CSV returns comma separated values
-              as string data.
 
         AllVersions: <bool>
               True: retrieves the versions field which contains a list of
@@ -409,13 +414,13 @@ def getVersion(
 
               False: (default) retrieves the current versions only.
 
-        Instance: <InstanceEnum>
+        Instance: <InstanceParam>
               Worldwide: Service location information pertianing to worldwide
-              hosted office instances with the exception of the following
-              instances.
+              hosted office Instances with the exception of the following
+              Instances.
 
               USGovDod: Service location information pertaining to Department
-              of defense segmented office instances.
+              of defense segmented office Instances.
 
               USGovGCCHigh: Service location inforamtion pertaining to
               Government Comunity Cloud - High Security Instances.
@@ -427,6 +432,11 @@ def getVersion(
               Germany: Service location information isolated to German secured
               intra-country datacenters.
 
+        Format: <FormatParam>
+              JSON returns JSON data, and CSV returns comma separated values
+              as string data.
+
+
     RETURNS
 
        ( length, ( <VersionModel object at 0x...>, ...) )   # if list of Versions
@@ -437,15 +447,15 @@ def getVersion(
     params = {
         'Format':          Format,
         'AllVersions':     AllVersions,
-        'Instance':        Instance.value
+        'Instance':        Instance
     }
-    return o365ipAddr_get(VersionModel, URI.version, **params)
+    return o365ipAddr_get(VersionModel, URI.version(), **params)
 
 
 def getEndpoints(
-        Instance:      InstanceEnum    = InstanceEnum.Worldwide,
-        Format:        FormatEnum      = FormatEnum.JSON,
-        ServiceAreas:  ServiceAreaEnum = None,
+        Instance:      InstanceParam    = InstanceParam.Worldwide,
+        Format:        FormatParam      = FormatParam.JSON,
+        ServiceAreas:  ServiceAreaParam = None,
         TenantName:    str             = None,
         NoIPv6:        bool            = False):
     """
@@ -456,21 +466,21 @@ def getEndpoints(
 
     ARGUMENTS
 
-        ServiceAreas: ServiceAreaEnum
+        ServiceAreas: ServiceAreaParam
     """
     params = {
-        'Format':          Format.value,
-        'ServiceAreas':    ServiceAreavalue,
+        'Format':          Format,
+        'ServiceAreas':    ServiceAreas,
         'TenantName':      TenantName,
         'NoIPv6':          NoIPv6,
     }
-    return o365ipAddr_get(EndpointsModel, URI.endpoints(Instance), **params)
+    return o365ipAddr_get(EndpointsModel, URI.endpoints(Instance.value), **params)
 
 
 def getChanges(
-        Instance:      InstanceEnum    = InstanceEnum.Worldwide,
-        Version:       InstanceVersion = '0000000000',
-        Format:        FormatEnum      = FormatEnum.JSON):
+        Instance:      InstanceParam    = InstanceParam.Worldwide,
+        Version:       InstanceVersion  = '0000000000',
+        Format:        FormatParam      = FormatParam.JSON):
     """ 
         Retrieves changes from o365.
     """
